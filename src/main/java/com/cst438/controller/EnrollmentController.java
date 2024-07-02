@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.Enrollment;
 import java.util.ArrayList;
 import java.util.List;
 
