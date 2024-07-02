@@ -21,9 +21,7 @@ public class EnrollmentController {
     @GetMapping("/sections/{sectionNo}/enrollments")
     public List<EnrollmentDTO> getEnrollments(
             @PathVariable("sectionNo") int sectionNo ) {
-        // TODO
-        //  hint: use enrollment repository findEnrollmentsBySectionNoOrderByStudentName method
-        //  remove the following line when done
+
         List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
         List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
         for (Enrollment enrollment : enrollments) {
@@ -52,11 +50,6 @@ public class EnrollmentController {
     // user must be instructor for the section
     @PutMapping("/enrollments")
     public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
-
-        // TODO
-        // For each EnrollmentDTO in the list
-        //  find the Enrollment entity using enrollmentId
-        //  update the grade and save back to database
         for (EnrollmentDTO dto : dlist) {
             Enrollment enrollment = enrollmentRepository.findById(dto.enrollmentId).orElseThrow(()
                     -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
