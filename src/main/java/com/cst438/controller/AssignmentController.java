@@ -45,7 +45,7 @@ public class AssignmentController {
             assignmentDTOS.add(new AssignmentDTO(
                     assignment.getAssignmentId(),
                     assignment.getTitle(),
-                    assignment.getDueDate().toString(),
+                    assignment.getDueDate(),
                     assignment.getSection().getCourse().getCourseId(),
                     assignment.getSection().getSecId(),
                     assignment.getSection().getSectionNo()
@@ -69,12 +69,12 @@ public class AssignmentController {
         }
         a.setSection(section);
         a.setTitle(dto.title());
-        a.setDueDate(Date.valueOf(dto.dueDate()));
+        a.setDueDate(dto.dueDate());
         assignmentRepository.save(a);
         return new AssignmentDTO(
                 a.getAssignmentId(),
                 a.getTitle(),
-                a.getDueDate().toString(),
+                a.getDueDate(),
                 a.getSection().getCourse().getCourseId(),
                 a.getSection().getSecId(),
                 a.getSection().getSectionNo()
@@ -89,12 +89,12 @@ public class AssignmentController {
         Assignment assignment = assignmentRepository.findById(dto.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
         assignment.setTitle(dto.title());
-        assignment.setDueDate(Date.valueOf(dto.dueDate()));
+        assignment.setDueDate(dto.dueDate());
         Assignment updatedAssignment = assignmentRepository.save(assignment);
         return new AssignmentDTO(
                 updatedAssignment.getAssignmentId(),
                 updatedAssignment.getTitle(),
-                updatedAssignment.getDueDate().toString(),
+                updatedAssignment.getDueDate(),
                 updatedAssignment.getSection().getCourse().getCourseId(),
                 updatedAssignment.getSection().getSecId(),
                 updatedAssignment.getSection().getSectionNo()
@@ -143,6 +143,9 @@ public class AssignmentController {
 
     // student lists their assignments/grades for an enrollment ordered by due date
     // student must be enrolled in the section
+    // return a list of assignments and (if they exist) the assignment grade
+    //  for all sections that the student is enrolled for the given year and semester
+    //  hint: use the assignment repository method findByStudentIdAndYearAndSemesterOrderByDueDate
     @GetMapping("/assignments")
     public List<AssignmentStudentDTO> getStudentAssignments(
             @RequestParam("studentId") int studentId,
@@ -165,7 +168,5 @@ public class AssignmentController {
 
         return assignmentStudentDTOS;
     }
-        // return a list of assignments and (if they exist) the assignment grade
-        //  for all sections that the student is enrolled for the given year and semester
-		//  hint: use the assignment repository method findByStudentIdAndYearAndSemesterOrderByDueDate
+
 }
