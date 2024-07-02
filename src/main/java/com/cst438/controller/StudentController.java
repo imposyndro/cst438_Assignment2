@@ -19,11 +19,18 @@ public class StudentController {
     @Autowired
     private EnrollmentRepository enrollmentRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
    // student gets transcript showing list of all enrollments
    // studentId will be temporary until Login security is implemented
    //example URL  /transcript?studentId=19803
    @GetMapping("/transcripts")
    public List<EnrollmentDTO> getTranscript(@RequestParam("studentId") int studentId) {
+       User student = userRepository.findStudentById(studentId);
+       if (student == null) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "studentId is invalid");
+       }
        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId);
        List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
        for (Enrollment enrollment : enrollments) {
@@ -56,6 +63,10 @@ public class StudentController {
            @RequestParam("year") int year,
            @RequestParam("semester") String semester,
            @RequestParam("studentId") int studentId) {
+       User student = userRepository.findStudentById(studentId);
+       if (student == null) {
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "studentId is invalid");
+       }
        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
        List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
        for (Enrollment enrollment : enrollments) {
