@@ -29,19 +29,19 @@ public class EnrollmentController {
             enrollmentDTOs.add(new EnrollmentDTO(
                     enrollment.getEnrollmentId(),
                     enrollment.getGrade(),
-                    enrollment.getStudent().getStudentId(),
-                    enrollment.getStudent().getName(),
-                    enrollment.getStudent().getEmail(),
+                    enrollment.getUser().getId(),
+                    enrollment.getUser().getName(),
+                    enrollment.getUser().getEmail(),
                     enrollment.getSection().getCourse().getCourseId(),
                     enrollment.getSection().getCourse().getTitle(),
-                    enrollment.getSection().getSectionId(),
+                    enrollment.getSection().getSecId(),
                     enrollment.getSection().getSectionNo(),
                     enrollment.getSection().getBuilding(),
                     enrollment.getSection().getRoom(),
                     enrollment.getSection().getTimes(),
                     enrollment.getSection().getCourse().getCredits(),
-                    enrollment.getSection().getYear(),
-                    enrollment.getSection().getSemester()
+                    enrollment.getSection().getTerm().getYear(),
+                    enrollment.getSection().getTerm().getSemester()
             ));
         }
         return enrollmentDTOs;
