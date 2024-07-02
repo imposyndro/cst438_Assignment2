@@ -52,9 +52,9 @@ public class EnrollmentController {
     @PutMapping("/enrollments")
     public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
         for (EnrollmentDTO dto : dlist) {
-            Enrollment enrollment = enrollmentRepository.findById(dto.enrollmentId).orElseThrow(()
+            Enrollment enrollment = enrollmentRepository.findById(dto.enrollmentId()).orElseThrow(()
                     -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
-            enrollment.setGrade(dto.grade);
+            enrollment.setGrade(dto.grade());
             enrollmentRepository.save(enrollment);
         }
     }
