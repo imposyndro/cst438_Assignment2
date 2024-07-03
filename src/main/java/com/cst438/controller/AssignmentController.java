@@ -1,9 +1,10 @@
 package com.cst438.controller;
 
 import com.cst438.domain.*;
-import com.cst438.dto.AssignmentDTO;
-import com.cst438.dto.AssignmentStudentDTO;
-import com.cst438.dto.GradeDTO;
+import com.cst438.dto.*;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.expression.spel.ast.Assign;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class AssignmentController {
 
     @Autowired
     private SectionRepository sectionRepository;
-
+    
     @Autowired
     private GradeRepository gradeRepository;
 
@@ -117,29 +118,40 @@ public class AssignmentController {
     // user must be instructor for the section
     @GetMapping("/assignments/{assignmentId}/grades")
     public List<GradeDTO> getAssignmentGrades(@PathVariable("assignmentId") int assignmentId) {
-
-        // TODO remove the following line when done
-
-        // get the list of enrollments for the section related to this assignment.
-        // hint: use te enrollment repository method findEnrollmentsBySectionOrderByStudentName.
-        // for each enrollment, get the grade related to the assignment and enrollment
-        //   hint: use the gradeRepository findByEnrollmentIdAndAssignmentId method.
-        //   if the grade does not exist, create a grade entity and set the score to NULL
-        //   and then save the new entity
-
-        return null;
+        var a = assignmentRepository.findById(assignmentId).orElseThrow(()
+                -> new ResponseStatusException(HttpStatus.NOT_FOUND, "AssignmentId not valid"));
+        var enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(a.getSection().getSectionNo());
+        List<GradeDTO> grades = new ArrayList<GradeDTO>();
+        for (Enrollment enrollment : enrollments) {
+            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollment.getEnrollmentId(), a.getAssignmentId());
+            if (grade == null) {
+                grade = new Grade();
+                grade.setAssignment(a);
+                grade.setEnrollment(enrollment);
+            }
+            gradeRepository.save(grade);
+            grades.add(new GradeDTO(
+                    grade.getGradeId(),
+                    grade.getEnrollment().getUser().getName(),
+                    grade.getEnrollment().getUser().getEmail(),
+                    grade.getAssignment().getTitle(),
+                    grade.getAssignment().getSection().getCourse().getCourseId(),
+                    grade.getAssignment().getSection().getSecId(),
+                    grade.getScore()));
+        }
+        return grades;
     }
 
     // instructor uploads grades for assignment
     // user must be instructor for the section
     @PutMapping("/grades")
     public void updateGrades(@RequestBody List<GradeDTO> dlist) {
-
-        // TODO
-
-        // for each grade in the GradeDTO list, retrieve the grade entity
-        // update the score and save the entity
-
+        for (GradeDTO dto : dlist) {
+            Grade grade = gradeRepository.findById(dto.gradeId()).orElseThrow(()
+                    -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found"));
+            grade.setScore(dto.score());
+            gradeRepository.save(grade);
+        }
     }
 
 
