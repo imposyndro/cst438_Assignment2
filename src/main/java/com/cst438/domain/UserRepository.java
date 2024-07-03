@@ -12,6 +12,6 @@ public interface UserRepository extends
 
 	User findByEmail(String email);
 
-	@Query("select u from User u where u.id=:studentId and u.type == 'STUDENT'")
+	@Query("select u from User u where u.id=:studentId and u.type='STUDENT'")
 	User findStudentById(int studentId);
 }
