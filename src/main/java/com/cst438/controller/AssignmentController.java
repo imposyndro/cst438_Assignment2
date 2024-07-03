@@ -37,8 +37,11 @@ public class AssignmentController {
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
     @GetMapping("/sections/{secNo}/assignments")
-    public List<AssignmentDTO> getAssignments(
-            @PathVariable("secNo") int secNo) {Section section = sectionRepository.findBySectionNum(secNo);
+    public List<AssignmentDTO> getAssignments(@PathVariable("secNo") int secNo) {
+        Section section = sectionRepository.findBySectionNum(secNo);
+        if (section == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found");
+        }
         List<Assignment> assignments = assignmentRepository.findBySectionNoOrderByDueDate(secNo);
         List<AssignmentDTO> assignmentDTOS = new ArrayList<>();
         for (Assignment assignment : assignments) {
