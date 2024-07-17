@@ -104,14 +104,21 @@ public class AssignmentControllerUnitTest {
     public void gradeAssignmentInvalidAssignmentId() throws Exception {
         MockHttpServletResponse response;
 
+        response = mvc.perform(
+                        get("/assignments/9999/grades")
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .getResponse();
+
+        assertEquals(404, response.getStatus());
+
         List<GradeDTO> grades = List.of(
                 new GradeDTO(9999, "Student One", "student1@example.com", "Assignment One", "CST438", 1, 95),
                 new GradeDTO(9999, "Student Two", "student2@example.com", "Assignment One", "CST438", 1, 85)
         );
 
         response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .put("/grades")
+                        put("/grades")
                                 .content(asJsonString(grades))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
@@ -119,7 +126,6 @@ public class AssignmentControllerUnitTest {
 
         assertEquals(404, response.getStatus());
     }
-
     @Test
     public void enterFinalGradesSuccess() throws Exception {
         MockHttpServletResponse response;
