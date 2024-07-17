@@ -1,275 +1,210 @@
 package com.cst438.controller;
 
-import com.cst438.domain.Section;
-import com.cst438.domain.SectionRepository;
-import com.cst438.domain.Assignment;
-import com.cst438.domain.AssignmentRepository;
-import com.cst438.dto.AssignmentDTO;
+import com.cst438.domain.*;
 import com.cst438.dto.SectionDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-/*
- * example of unit test to add a section to an existing course
- */
-
-@AutoConfigureMockMvc
-@SpringBootTest
-public class SectionControllerUnitTest {
+@RestController
+@CrossOrigin(origins = "http://localhost:3000")
+public class SectionController {
 
     @Autowired
-    MockMvc mvc;
+    CourseRepository courseRepository;
 
     @Autowired
     SectionRepository sectionRepository;
 
     @Autowired
-    AssignmentRepository assignmentRepository;
+    TermRepository termRepository;
 
-    @Test
-    public void addSection() throws Exception {
+    @Autowired
+    UserRepository userRepository;
 
-        MockHttpServletResponse response;
 
-        // create DTO with data for new section.
-        // the primary key, secNo, is set to 0. it will be
-        // set by the database when the section is inserted.
-        SectionDTO section = new SectionDTO(
-                0,
-                2024,
-                "Spring",
-                "cst499",
-                "Title",
-                1,
-                "052",
-                "104",
-                "W F 1:00-2:50 pm",
-                "Joshua Gross",
-                "jgross@csumb.edu"
+    // ADMIN function to create a new section
+    @PostMapping("/sections")
+    public SectionDTO addSection(@RequestBody SectionDTO section) {
+
+        Course course = courseRepository.findById(section.courseId()).orElse(null);
+        if (course == null ){
+            throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "course not found "+section.courseId());
+        }
+        Section s = new Section();
+        s.setCourse(course);
+
+        Term term = termRepository.findByYearAndSemester(section.year(), section.semester());
+        if (term == null) {
+            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "year, semester invalid ");
+        }
+        s.setTerm(term);
+
+        s.setSecId(section.secId());
+        s.setBuilding(section.building());
+        s.setRoom(section.room());
+        s.setTimes(section.times());
+
+        User instructor = null;
+        if (section.instructorEmail()==null || section.instructorEmail().equals("")) {
+            s.setInstructor_email("");
+        } else {
+            instructor = userRepository.findByEmail(section.instructorEmail());
+            if (instructor == null || !instructor.getType().equals("INSTRUCTOR")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "email not found or not an instructor " + section.instructorEmail());
+            }
+            s.setInstructor_email(section.instructorEmail());
+        }
+
+        sectionRepository.save(s);
+        return new SectionDTO(
+                s.getSectionNo(),
+                s.getTerm().getYear(),
+                s.getTerm().getSemester(),
+                s.getCourse().getCourseId(),
+		        s.getCourse().getTitle(),
+                s.getSecId(),
+                s.getBuilding(),
+                s.getRoom(),
+                s.getTimes(),
+                (instructor!=null) ? instructor.getName() : "",
+                (instructor!=null) ? instructor.getEmail() : ""
         );
-
-        // issue a http POST request to SpringTestServer
-        // specify MediaType for request and response data
-        // convert section to String data and set as request content
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .post("/sections")
-                                .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(asJsonString(section)))
-                        .andReturn()
-                        .getResponse();
-
-        // check the response code for 200 meaning OK
-        assertEquals(200, response.getStatus());
-
-        // return data converted from String to DTO
-        SectionDTO result = fromJsonString(response.getContentAsString(), SectionDTO.class);
-
-        // primary key should have a non zero value from the database
-        assertNotEquals(0, result.secNo());
-        // check other fields of the DTO for expected values
-        assertEquals("cst499", result.courseId());
-
-        // check the database
-        Section s = sectionRepository.findById(result.secNo()).orElse(null);
-        assertNotNull(s);
-        assertEquals("cst499", s.getCourse().getCourseId());
-
-        // clean up after test. issue http DELETE request for section
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .delete("/sections/"+result.secNo()))
-                .andReturn()
-                .getResponse();
-
-        assertEquals(200, response.getStatus());
-
-        // check database for delete
-        s = sectionRepository.findById(result.secNo()).orElse(null);
-        assertNull(s);  // section should not be found after delete
     }
 
-    @Test
-    public void addSectionFailsBadCourse( ) throws Exception {
+    // ADMIN function to update a section
+    @PutMapping("/sections")
+    public void updateSection(@RequestBody SectionDTO section) {
+        // can only change instructor email, sec_id, building, room, times, start, end dates
+        Section s = sectionRepository.findById(section.secNo()).orElse(null);
+        if (s==null) {
+            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "section not found "+section.secNo());
+        }
+        s.setSecId(section.secId());
+        s.setBuilding(section.building());
+        s.setRoom(section.room());
+        s.setTimes(section.times());
 
-        MockHttpServletResponse response;
-
-        // course id cst599 does not exist.
-        SectionDTO section = new SectionDTO(
-                0,
-                2024,
-                "Spring",
-                "cst599",
-                "Title",
-                1,
-                "052",
-                "104",
-                "W F 1:00-2:50 pm",
-                "Joshua Gross",
-                "jgross@csumb.edu"
-        );
-
-        // issue the POST request
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .post("/sections")
-                                .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(asJsonString(section)))
-                .andReturn()
-                .getResponse();
-
-        // response should be 400, BAD_REQUEST
-        assertEquals(400, response.getStatus());
-
-        // check the expected error message
-        String message = response.getErrorMessage();
-        assertEquals("course not found cst599", message);
-
+        User instructor = null;
+        if (section.instructorEmail()==null || section.instructorEmail().equals("")) {
+            s.setInstructor_email("");
+        } else {
+            instructor = userRepository.findByEmail(section.instructorEmail());
+            if (instructor == null || !instructor.getType().equals("INSTRUCTOR")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "email not found or not an instructor " + section.instructorEmail());
+            }
+            s.setInstructor_email(section.instructorEmail());
+        }
+        sectionRepository.save(s);
     }
 
-    @Test
-    public void addAssignmentSuccessfully() throws Exception {
-
-        MockHttpServletResponse response;
-
-        // Create an AssignmentDTO with valid data
-        AssignmentDTO assignment = new AssignmentDTO(
-                1,
-                "db homework 2",
-                Date.valueOf("2024-02-15"),
-                "cst238",
-                1,
-                8
-        );
-
-        // Perform a POST request to "/assignments"
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .post("/assignments")
-                                .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(asJsonString(assignment)))
-                .andReturn()
-                .getResponse();
-
-        // Assert the response status is 200 (OK)
-        assertEquals(200, response.getStatus());
-
-        // Convert the response content to an AssignmentDTO
-        AssignmentDTO result = fromJsonString(response.getContentAsString(), AssignmentDTO.class);
-
-        // Assert the returned AssignmentDTO has a non-zero id and other expected values
-        assertNotEquals(0, result.id());
-        assertEquals("db homework 2", result.title());
-
-        // Check the database to ensure the assignment was added
-        Assignment a = assignmentRepository.findById(result.id()).orElse(null);
-        assertNotNull(a);
-        assertEquals("db homework 2", a.getTitle());
-
-        // Clean up after the test by deleting the added assignment and asserting it was deleted
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .delete("/assignments/" + result.id()))
-                .andReturn()
-                .getResponse();
-
-        assertEquals(200, response.getStatus());
-        a = assignmentRepository.findById(result.id()).orElse(null);
-        assertNull(a);
-    }
-
-    @Test
-    public void addAssignmentWithPastDueDate() throws Exception {
-
-        MockHttpServletResponse response;
-
-        // Create an AssignmentDTO with a due date past the end date of the class
-        AssignmentDTO assignment = new AssignmentDTO(
-                1,
-                "db homework 1",
-                Date.valueOf("2024-06-01"),
-                "cst363",
-                1,
-                8
-        );
-
-        // Perform a POST request to "/assignments"
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .post("/assignments")
-                                .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(asJsonString(assignment)))
-                .andReturn()
-                .getResponse();
-
-        // Assert the response status is 400 (BAD_REQUEST)
-        assertEquals(400, response.getStatus());
-
-        // Check the error message
-        String errorMessage = response.getErrorMessage();
-        assertEquals("Due date cannot be after the end date of the section", errorMessage);
-    }
-
-    @Test
-    public void addAssignmentWithInvalidSectionNumber() throws Exception {
-
-        MockHttpServletResponse response;
-
-        // Create an AssignmentDTO with an invalid section number
-        AssignmentDTO assignment = new AssignmentDTO(
-                0,
-                "Assignment 1",
-                Date.valueOf("2024-01-31"),
-                "cst499",
-                1,
-                999
-        );
-
-        // Perform a POST request to "/assignments"
-        response = mvc.perform(
-                        MockMvcRequestBuilders
-                                .post("/assignments")
-                                .accept(MediaType.APPLICATION_JSON)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(asJsonString(assignment)))
-                .andReturn()
-                .getResponse();
-
-        // Assert the response status is 400 (BAD_REQUEST)
-        assertEquals(400, response.getStatus());
-
-        String errorMessage = response.getErrorMessage();
-        assertEquals("Invalid section number", errorMessage);
-    }
-
-    private static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    // ADMIN function to create a delete section
+    // delete will fail there are related assignments or enrollments
+    @DeleteMapping("/sections/{sectionno}")
+    public void deleteSection(@PathVariable int sectionno) {
+        Section s = sectionRepository.findById(sectionno).orElse(null);
+        if (s != null) {
+            sectionRepository.delete(s);
         }
     }
 
-    private static <T> T  fromJsonString(String str, Class<T> valueType ) {
-        try {
-            return new ObjectMapper().readValue(str, valueType);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+    // get Sections for a course with request params year, semester
+    // example URL   /course/cst363/sections?year=2024&semester=Spring
+    // also specify partial courseId   /course/cst/sections?year=2024&semester=Spring
+    @GetMapping("/courses/{courseId}/sections")
+    public List<SectionDTO> getSections(
+            @PathVariable("courseId") String courseId,
+            @RequestParam("year") int year ,
+            @RequestParam("semester") String semester )  {
+
+
+        List<Section> sections = sectionRepository.findByLikeCourseIdAndYearAndSemester(courseId+"%", year, semester);
+
+        List<SectionDTO> dto_list = new ArrayList<>();
+        for (Section s : sections) {
+            User instructor = null;
+            if (s.getInstructorEmail()!=null) {
+                instructor = userRepository.findByEmail(s.getInstructorEmail());
+            }
+            dto_list.add(new SectionDTO(
+                    s.getSectionNo(),
+                    s.getTerm().getYear(),
+                    s.getTerm().getSemester(),
+                    s.getCourse().getCourseId(),
+		            s.getCourse().getTitle(),
+                    s.getSecId(),
+                    s.getBuilding(),
+                    s.getRoom(),
+                    s.getTimes(),
+                    (instructor!=null) ? instructor.getName() : "",
+                    (instructor!=null) ? instructor.getEmail() : ""
+            ));
+
         }
+        return dto_list;
+    }
+
+    // get Sections for an instructor
+    // example URL  /sections?instructorEmail=dwisneski@csumb.edu&year=2024&semester=Spring
+    @GetMapping("/sections")
+    public List<SectionDTO> getSectionsForInstructor(
+            @RequestParam("email") String instructorEmail,
+            @RequestParam("year") int year ,
+            @RequestParam("semester") String semester )  {
+
+
+        List<Section> sections = sectionRepository.findByInstructorEmailAndYearAndSemester(instructorEmail, year, semester);
+
+        List<SectionDTO> dto_list = new ArrayList<>();
+        for (Section s : sections) {
+            User instructor = null;
+            if (s.getInstructorEmail()!=null) {
+                instructor = userRepository.findByEmail(s.getInstructorEmail());
+            }
+            dto_list.add(new SectionDTO(
+                    s.getSectionNo(),
+                    s.getTerm().getYear(),
+                    s.getTerm().getSemester(),
+                    s.getCourse().getCourseId(),
+		            s.getCourse().getTitle(),
+                    s.getSecId(),
+                    s.getBuilding(),
+                    s.getRoom(),
+                    s.getTimes(),
+                    (instructor!=null) ? instructor.getName() : "",
+                    (instructor!=null) ? instructor.getEmail() : ""
+            ));
+        }
+        return dto_list;
+    }
+	
+    @GetMapping("/sections/open")
+    public List<SectionDTO> getOpenSectionsForEnrollment() {
+
+        List<Section> sections = sectionRepository.findByOpenOrderByCourseIdSectionId();
+
+        List<SectionDTO> dlist = new ArrayList<>();
+        for (Section s : sections) {
+            User instructor = userRepository.findByEmail(s.getInstructorEmail());
+            dlist.add( new SectionDTO(
+                    s.getSectionNo(),
+                    s.getTerm().getYear(),
+                    s.getTerm().getSemester(),
+                    s.getCourse().getCourseId(),
+		            s.getCourse().getTitle(),
+                    s.getSecId(),
+                    s.getBuilding(),
+                    s.getRoom(),
+                    s.getTimes(),
+                    (instructor!=null) ? instructor.getName() : "",
+                    (instructor!=null) ? instructor.getEmail() : ""
+            ));
+        }
+        return dlist;
     }
 }
