@@ -42,7 +42,7 @@ public class SectionControllerUnitTest {
                 2024,
                 "Spring",
                 "cst499",
-                "Title",
+                "",
                 1,
                 "052",
                 "104",
@@ -60,8 +60,8 @@ public class SectionControllerUnitTest {
                                 .accept(MediaType.APPLICATION_JSON)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(asJsonString(section)))
-                        .andReturn()
-                        .getResponse();
+                .andReturn()
+                .getResponse();
 
         // check the response code for 200 meaning OK
         assertEquals(200, response.getStatus());
@@ -104,7 +104,7 @@ public class SectionControllerUnitTest {
                 2024,
                 "Spring",
                 "cst599",
-                "Title",
+                "",
                 1,
                 "052",
                 "104",
@@ -123,8 +123,8 @@ public class SectionControllerUnitTest {
                 .andReturn()
                 .getResponse();
 
-        // response should be 400, BAD_REQUEST
-        assertEquals(400, response.getStatus());
+        // response should be 404, the course cst599 is not found
+        assertEquals(404, response.getStatus());
 
         // check the expected error message
         String message = response.getErrorMessage();

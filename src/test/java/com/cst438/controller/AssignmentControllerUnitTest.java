@@ -124,7 +124,7 @@ public class AssignmentControllerUnitTest {
     public void enterFinalGradesSuccess() throws Exception {
         MockHttpServletResponse response;
 
-        // Setting up Term, Course, Section, and User objects
+
         Term term = new Term();
         term.setYear(2024);
         term.setSemester("Fall");
@@ -167,7 +167,7 @@ public class AssignmentControllerUnitTest {
         when(enrollmentRepository.findById(1)).thenReturn(Optional.of(enrollment1));
         when(enrollmentRepository.findById(2)).thenReturn(Optional.of(enrollment2));
 
-        // Performing GET request to retrieve enrollments
+
         response = mvc.perform(
                         get("/sections/1/enrollments")
                                 .contentType(MediaType.APPLICATION_JSON))
@@ -180,16 +180,47 @@ public class AssignmentControllerUnitTest {
         assertEquals("Student One", returnedEnrollments[0].name());
         assertEquals("Student Two", returnedEnrollments[1].name());
 
-        // Updating enrollments with final grades
-        List<EnrollmentDTO> finalGrades = List.of(
-                new EnrollmentDTO(returnedEnrollments[0].enrollmentId(), "A", returnedEnrollments[0].studentId(), returnedEnrollments[0].name(), returnedEnrollments[0].email(), returnedEnrollments[0].courseId(), returnedEnrollments[0].title(), returnedEnrollments[0].sectionId(), returnedEnrollments[0].sectionNo(), returnedEnrollments[0].building(), returnedEnrollments[0].room(), returnedEnrollments[0].times(), returnedEnrollments[0].credits(), returnedEnrollments[0].year(), returnedEnrollments[0].semester()),
-                new EnrollmentDTO(returnedEnrollments[1].enrollmentId(), "B", returnedEnrollments[1].studentId(), returnedEnrollments[1].name(), returnedEnrollments[1].email(), returnedEnrollments[1].courseId(), returnedEnrollments[1].title(), returnedEnrollments[1].sectionId(), returnedEnrollments[1].sectionNo(), returnedEnrollments[1].building(), returnedEnrollments[1].room(), returnedEnrollments[1].times(), returnedEnrollments[1].credits(), returnedEnrollments[1].year(), returnedEnrollments[1].semester())
+
+        returnedEnrollments[0] = new EnrollmentDTO(
+                returnedEnrollments[0].enrollmentId(),
+                "A",
+                returnedEnrollments[0].studentId(),
+                returnedEnrollments[0].name(),
+                returnedEnrollments[0].email(),
+                returnedEnrollments[0].courseId(),
+                returnedEnrollments[0].title(),
+                returnedEnrollments[0].sectionId(),
+                returnedEnrollments[0].sectionNo(),
+                returnedEnrollments[0].building(),
+                returnedEnrollments[0].room(),
+                returnedEnrollments[0].times(),
+                returnedEnrollments[0].credits(),
+                returnedEnrollments[0].year(),
+                returnedEnrollments[0].semester()
         );
 
-        // Performing PUT request to update grades
+        returnedEnrollments[1] = new EnrollmentDTO(
+                returnedEnrollments[1].enrollmentId(),
+                "B",
+                returnedEnrollments[1].studentId(),
+                returnedEnrollments[1].name(),
+                returnedEnrollments[1].email(),
+                returnedEnrollments[1].courseId(),
+                returnedEnrollments[1].title(),
+                returnedEnrollments[1].sectionId(),
+                returnedEnrollments[1].sectionNo(),
+                returnedEnrollments[1].building(),
+                returnedEnrollments[1].room(),
+                returnedEnrollments[1].times(),
+                returnedEnrollments[1].credits(),
+                returnedEnrollments[1].year(),
+                returnedEnrollments[1].semester()
+        );
+
+
         response = mvc.perform(
                         put("/enrollments")
-                                .content(asJsonString(finalGrades))
+                                .content(asJsonString(List.of(returnedEnrollments)))
                                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
                 .getResponse();
