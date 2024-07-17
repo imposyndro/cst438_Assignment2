@@ -27,7 +27,7 @@ public class SectionController {
     UserRepository userRepository;
 
 
-     // ADMIN function to create a new section
+    // ADMIN function to create a new section
     @PostMapping("/sections")
     public SectionDTO addSection(@RequestBody SectionDTO section) {
 
