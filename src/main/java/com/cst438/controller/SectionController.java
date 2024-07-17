@@ -27,13 +27,13 @@ public class SectionController {
     UserRepository userRepository;
 
 
-    // ADMIN function to create a new section
+     // ADMIN function to create a new section
     @PostMapping("/sections")
     public SectionDTO addSection(@RequestBody SectionDTO section) {
 
         Course course = courseRepository.findById(section.courseId()).orElse(null);
         if (course == null ){
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "course not found "+section.courseId());
+            throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "course not found "+section.courseId());
         }
         Section s = new Section();
         s.setCourse(course);
