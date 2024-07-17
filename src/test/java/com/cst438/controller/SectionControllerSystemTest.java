@@ -335,7 +335,7 @@ public class SectionControllerSystemTest {
         instDropdown.click();
 
         // Select instructor
-        WebElement inst = driver.findElement(By.xpath("//li[text()='jgross@csumb.edu']"));
+        WebElement inst = driver.findElement(By.xpath("//li[text()='dwisneski@csumb.edu']"));
         inst.click();
 
         // Select section dropdown menu
@@ -354,7 +354,7 @@ public class SectionControllerSystemTest {
         // Add title and due date
         driver.findElement(By.id("title")).sendKeys("Extra Credit Assignment 1");
         driver.findElement(By.id("dueDate")).clear();
-        driver.findElement(By.id("dueDate")).sendKeys("07-04-2024");
+        driver.findElement(By.id("dueDate")).sendKeys("04-20-2024");
 
         // Click save
         driver.findElement(By.xpath("//button[text()='Save']")).click();
@@ -387,7 +387,7 @@ public class SectionControllerSystemTest {
         Thread.sleep(SLEEP_DURATION);
         instDropdown = driver.findElement(By.xpath("//label[text()='Select Instructor']/following-sibling::div"));
         instDropdown.click();
-        inst = driver.findElement(By.xpath("//li[text()='jgross@csumb.edu']"));
+        inst = driver.findElement(By.xpath("//li[text()='dwisneski@csumb.edu']"));
         inst.click();
         sectDropdown = driver.findElement(By.xpath("//label[text()='Select Section']/following-sibling::div"));
         sectDropdown.click();
@@ -408,7 +408,7 @@ public class SectionControllerSystemTest {
             String date = assignRow.findElement(By.xpath("./td[3]")).getText();
 
             // Confirm if they match with what we're looking for
-            if (title.equals("Extra Credit Assignment 1") && date.equals("07-04-2024")){
+            if (title.equals("Extra Credit Assignment 1") && date.equals("04-20-2024")){
                 exFound = true;
 
                 // After the boolean was confirmed true, delete the assignment made during
@@ -446,3 +446,4 @@ public class SectionControllerSystemTest {
     }
     // --- INSTRUCTOR TESTS END ---
 }
+
