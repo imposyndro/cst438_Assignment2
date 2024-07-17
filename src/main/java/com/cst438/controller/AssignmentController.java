@@ -69,7 +69,11 @@ public class AssignmentController {
 
         Section section = sectionRepository.findBySectionNum(dto.secNo());
         if (section == null) {
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "secId is invalid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid section number");
+        }
+        // Check if the due date is after the end date of the section
+        if (dto.dueDate().after(section.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date cannot be after the end date of the section");
         }
         a.setSection(section);
         a.setTitle(dto.title());
@@ -92,6 +96,12 @@ public class AssignmentController {
     public AssignmentDTO updateAssignment(@RequestBody AssignmentDTO dto) {
         Assignment assignment = assignmentRepository.findById(dto.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+
+        // Check if the due date is after the end date of the section
+        if (dto.dueDate().after(assignment.getSection().getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date cannot be after the end date of the section");
+        }
+
         assignment.setTitle(dto.title());
         assignment.setDueDate(dto.dueDate());
         Assignment updatedAssignment = assignmentRepository.save(assignment);
