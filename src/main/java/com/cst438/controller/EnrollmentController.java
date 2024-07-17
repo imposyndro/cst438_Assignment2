@@ -1,8 +1,6 @@
 package com.cst438.controller;
 
 
-import com.cst438.domain.Section;
-import com.cst438.domain.SectionRepository;
 import com.cst438.dto.EnrollmentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,28 +17,15 @@ public class EnrollmentController {
     @Autowired
     private EnrollmentRepository enrollmentRepository;
 
-    @Autowired
-    private SectionRepository sectionRepository;
-
     // instructor downloads student enrollments for a section, ordered by student name
     // user must be instructor for the section
     @GetMapping("/sections/{sectionNo}/enrollments")
     public List<EnrollmentDTO> getEnrollments(
-        @PathVariable("sectionNo") int sectionNo ) {
-    Section section = sectionRepository.findById(sectionNo).orElseThrow(()
-            -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found"));
-    List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
-    List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
-    for (Enrollment enrollment : enrollments) {
-        if (enrollment.getSection().getTerm() == null
-                || enrollment.getSection().getTerm().getYear() < 2000
-                || enrollment.getSection().getTerm().getYear() > 2100
-                || enrollment.getSection().getTerm().getSemester() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Enrollment has incorrect year or no set semester."
-            );
-        }
+            @PathVariable("sectionNo") int sectionNo ) {
+
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
+        List<EnrollmentDTO> enrollmentDTOs = new ArrayList<>();
+        for (Enrollment enrollment : enrollments) {
             enrollmentDTOs.add(new EnrollmentDTO(
                     enrollment.getEnrollmentId(),
                     enrollment.getGrade(),
