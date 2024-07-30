@@ -30,8 +30,8 @@ public class Section {
     @OneToMany(mappedBy="section")
     List<Enrollment> enrollments;
 
-    @OneToMany(mappedBy="section")
-    List<Assignment> assignments;
+    //@OneToMany(mappedBy="section")
+    //List<Assignment> assignments;
 
     public int getSectionNo() {
         return sectionNo;
@@ -49,9 +49,7 @@ public class Section {
         this.course = course;
     }
 
-    public Date getEndDate() { 
-        return term.getEndDate(); 
-    }
+    public Date getEndDate() { return term.getEndDate(); }
 
     public Term getTerm() {
         return term;
@@ -105,5 +103,5 @@ public class Section {
         return enrollments;
     }
 
-    public List<Assignment> getAssignments() { return assignments; }
+    //public List<Assignment> getAssignments() { return assignments; }
 }
