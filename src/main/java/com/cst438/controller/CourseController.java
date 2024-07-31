@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import com.cst438.service.GradebookServiceProxy;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +35,8 @@ public class CourseController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    GradebookServiceProxy gradebookServiceProxy;
 
     // ADMIN function to create a new course
     @PostMapping("/courses")
@@ -43,6 +46,7 @@ public class CourseController {
         c.setTitle(course.title());
         c.setCourseId(course.courseId());
         courseRepository.save(c);
+        gradebookServiceProxy.sendMessage("Course created: " + course.courseId());
         return new CourseDTO(
                 c.getCourseId(),
                 c.getTitle(),
@@ -60,6 +64,7 @@ public class CourseController {
             c.setTitle(course.title());
             c.setCredits(course.credits());
             courseRepository.save(c);
+            gradebookServiceProxy.sendMessage("Course updated: " + course.courseId());
             return new CourseDTO(
                     c.getCourseId(),
                     c.getTitle(),
@@ -76,6 +81,7 @@ public class CourseController {
         // if course does not exist, do nothing.
         if (c!=null) {
             courseRepository.delete(c);
+            gradebookServiceProxy.sendMessage("Course deleted: " + courseid);
         }
     }
 

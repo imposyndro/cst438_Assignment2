@@ -2,6 +2,7 @@ package com.cst438.controller;
 
 import com.cst438.domain.*;
 import com.cst438.dto.SectionDTO;
+import com.cst438.service.GradebookServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +27,12 @@ public class SectionController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    GradebookServiceProxy gradebookServiceProxy;
 
     // ADMIN function to create a new section
     @PostMapping("/sections")
     public SectionDTO addSection(@RequestBody SectionDTO section) {
-
         Course course = courseRepository.findById(section.courseId()).orElse(null);
         if (course == null ){
             throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "course not found "+section.courseId());
@@ -42,8 +44,8 @@ public class SectionController {
         if (term == null) {
             throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "year, semester invalid ");
         }
-        s.setTerm(term);
 
+        s.setTerm(term);
         s.setSecId(section.secId());
         s.setBuilding(section.building());
         s.setRoom(section.room());
@@ -61,6 +63,7 @@ public class SectionController {
         }
 
         sectionRepository.save(s);
+        gradebookServiceProxy.sendMessage("Section created: " + section.secId());
         return new SectionDTO(
                 s.getSectionNo(),
                 s.getTerm().getYear(),
@@ -100,6 +103,7 @@ public class SectionController {
             s.setInstructor_email(section.instructorEmail());
         }
         sectionRepository.save(s);
+        gradebookServiceProxy.sendMessage("Section updated: " + section.secId());
     }
 
     // ADMIN function to create a delete section
@@ -109,6 +113,7 @@ public class SectionController {
         Section s = sectionRepository.findById(sectionno).orElse(null);
         if (s != null) {
             sectionRepository.delete(s);
+            gradebookServiceProxy.sendMessage("Section deleted: " + sectionno);
         }
     }
 
