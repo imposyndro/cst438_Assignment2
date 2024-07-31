@@ -56,7 +56,7 @@ public class RegistrarServiceProxy {
     @RabbitListener(queues = "gradebook_service")
     public void receiveFromRegistrar(String message)  {
         try {
-            String[] parts = message.split(" ", 1);
+            String[] parts = message.split(" ", 2);
             String action = parts[0];
             if (action.equals("addCourse")) {
                 CourseDTO dto = fromJsonString(parts[1], CourseDTO.class);
@@ -70,15 +70,27 @@ public class RegistrarServiceProxy {
             } else if (action.equals("updateCourse")) {
                 CourseDTO dto = fromJsonString(parts[1], CourseDTO.class);
                 Course c = courseRepository.findById(dto.courseId()).orElse(null);
+                if (c == null)
+                {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found " + dto.courseId());
+                }
                 c.setTitle(dto.title());
                 c.setCredits(dto.credits());
                 courseRepository.save(c);
             } else if (action.equals("addSection")) {
                 SectionDTO dto = fromJsonString(parts[1], SectionDTO.class);
                 Course course = courseRepository.findById(dto.courseId()).orElse(null);
+                if (course == null)
+                {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found " + dto.courseId());
+                }
                 Section s = new Section();
                 s.setCourse(course);
                 Term term = termRepository.findByYearAndSemester(dto.year(), dto.semester());
+                if (term == null)
+                {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Term not found for year " + dto.year() + " and semester " + dto.semester());
+                }
                 s.setTerm(term);
                 s.setSecId(dto.secId());
                 s.setBuilding(dto.building());
@@ -173,6 +185,7 @@ public class RegistrarServiceProxy {
                 ;
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             return;
         }
 
