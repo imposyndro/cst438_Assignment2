@@ -78,34 +78,7 @@ public class RegistrarServiceProxy {
                 c.setCredits(dto.credits());
                 courseRepository.save(c);
             } else if (action.equals("addSection")) {
-                SectionDTO dto = fromJsonString(parts[1], SectionDTO.class);
-                Course course = courseRepository.findById(dto.courseId()).orElse(null);
-                if (course == null)
-                {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found " + dto.courseId());
-                }
-                Section s = new Section();
-                s.setCourse(course);
-                Term term = termRepository.findByYearAndSemester(dto.year(), dto.semester());
-                if (term == null)
-                {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Term not found for year " + dto.year() + " and semester " + dto.semester());
-                }
-                s.setTerm(term);
-                s.setSecId(dto.secId());
-                s.setBuilding(dto.building());
-                s.setRoom(dto.room());
-                s.setTimes(dto.times());
-                User instructor = null;
-                if (dto.instructorEmail()==null || dto.instructorEmail().equals("")) {
-                    s.setInstructor_email("");
-                } else {
-                    instructor = userRepository.findByEmail(dto.instructorEmail());
-                    if (instructor == null || !instructor.getType().equals("INSTRUCTOR")) {
-                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "email not found or not an instructor " + dto.instructorEmail());
-                    }
-                    s.setInstructor_email(dto.instructorEmail());
-                }
+                Section s = fromJsonString(parts[1], Section.class);
                 sectionRepository.save(s);
             } else if (action.equals("deleteSection")) {
                 Section s = sectionRepository.findById(Integer.parseInt(parts[1])).orElse(null);
@@ -135,23 +108,7 @@ public class RegistrarServiceProxy {
                 }
                 sectionRepository.save(s);
             } else if (action.equals("addUser")) {
-                UserDTO dto = fromJsonString(parts[1], UserDTO.class);
-                User user = new User();
-                user.setName(dto.name());
-                user.setEmail(dto.email());
-
-                // create password and encrypt it
-                String password = dto.name()+"2024";
-                String enc_password = encoder.encode(password);
-                user.setPassword(enc_password);
-
-                user.setType(dto.type());
-                if (!dto.type().equals("STUDENT") &&
-                        !dto.type().equals("INSTRUCTOR") &&
-                        !dto.type().equals("ADMIN")) {
-                    // invalid type
-                    throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "invalid user type");
-                }
+                User user = fromJsonString(parts[1], User.class);
                 userRepository.save(user);
             } else if (action.equals("deleteUser")) {
                 User user = userRepository.findById(Integer.parseInt(parts[1])).orElse(null);
@@ -159,20 +116,7 @@ public class RegistrarServiceProxy {
                     userRepository.delete(user);
                 }
             } else if (action.equals("updateUser")) {
-                UserDTO dto = fromJsonString(parts[1], UserDTO.class);
-                User user = userRepository.findById(dto.id()).orElse(null);
-                if (user==null) {
-                    throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "user id not found");
-                }
-                user.setName(dto.name());
-                user.setEmail(dto.email());
-                user.setType(dto.type());
-                if (!dto.type().equals("STUDENT") &&
-                        !dto.type().equals("INSTRUCTOR") &&
-                        !dto.type().equals("ADMIN")) {
-                    // invalid type
-                    throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "invalid user type");
-                }
+                User user = fromJsonString(parts[1], User.class);
                 userRepository.save(user);
             } else if (action.equals("addEnrollment")) {
                 Enrollment enrollment = fromJsonString(parts[1], Enrollment.class);

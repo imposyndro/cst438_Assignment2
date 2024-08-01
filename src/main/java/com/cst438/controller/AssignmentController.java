@@ -75,7 +75,7 @@ public class AssignmentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid section number");
         }
         // Check if the due date is after the end date of the section
-        if (dto.dueDate().after(section.getEndDate())) {
+        if (dto.dueDate().after(section.getTerm().getEndDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date cannot be after the end date of the section");
         }
         a.setSection(section);
@@ -101,7 +101,7 @@ public class AssignmentController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
 
         // Check if the due date is after the end date of the section
-        if (dto.dueDate().after(assignment.getSection().getEndDate())) {
+        if (dto.dueDate().after(assignment.getSection().getTerm().getEndDate())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Due date cannot be after the end date of the section");
         }
 

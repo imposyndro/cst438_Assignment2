@@ -48,10 +48,6 @@ public class Section {
         this.course = course;
     }
 
-    public Date getEndDate() { 
-        return term.getEndDate(); 
-    }
-
     public Term getTerm() {
         return term;
     }
