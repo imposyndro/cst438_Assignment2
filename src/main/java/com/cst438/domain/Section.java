@@ -9,7 +9,6 @@ import java.util.List;
 public class Section {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name="section_no")
     private int sectionNo;  // unique id assigned by database.  Used to enroll into a section.
 
@@ -47,10 +46,6 @@ public class Section {
 
     public void setCourse(Course course) {
         this.course = course;
-    }
-
-    public Date getEndDate() { 
-        return term.getEndDate(); 
     }
 
     public Term getTerm() {
