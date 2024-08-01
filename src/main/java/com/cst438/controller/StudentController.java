@@ -2,6 +2,9 @@ package com.cst438.controller;
 
 import com.cst438.domain.*;
 import com.cst438.dto.EnrollmentDTO;
+import com.cst438.service.GradebookServiceProxy;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,20 @@ public class StudentController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GradebookServiceProxy gradebookServiceProxy;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // Method to convert DTO to JSON string
+    private String asJsonString(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
    // student gets transcript showing list of all enrollments
    // studentId will be temporary until Login security is implemented
@@ -124,6 +141,7 @@ public class StudentController {
         enrollment.setUser(student);
         enrollment.setSection(section);
         enrollmentRepository.save(enrollment);
+        gradebookServiceProxy.sendMessage("addEnrollment " + asJsonString(enrollment));
         return new EnrollmentDTO(
                 enrollment.getEnrollmentId(),
                 enrollment.getGrade(),
@@ -160,5 +178,6 @@ public class StudentController {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "the deadline to drop this enrollment has passed");
        }
        enrollmentRepository.delete(e);
+       gradebookServiceProxy.sendMessage("deleteEnrollment " + enrollmentId);
    }
 }
