@@ -1,5 +1,6 @@
 package com.cst438.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.sql.Date;
@@ -28,6 +29,7 @@ public class Section {
     private String instructorEmail;
 
     @OneToMany(mappedBy="section")
+    @JsonBackReference
     List<Enrollment> enrollments;
 
     //@OneToMany(mappedBy="section")
@@ -48,8 +50,6 @@ public class Section {
     public void setCourse(Course course) {
         this.course = course;
     }
-
-    public Date getEndDate() { return term.getEndDate(); }
 
     public Term getTerm() {
         return term;
