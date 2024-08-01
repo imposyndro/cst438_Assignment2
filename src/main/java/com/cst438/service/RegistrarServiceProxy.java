@@ -180,10 +180,6 @@ public class RegistrarServiceProxy {
             } else if (action.equals("deleteEnrollment")) {
                 enrollmentRepository.deleteById(Integer.parseInt(parts[1]));
             }
-            // I don't think there is a controller method for updating an enrollment
-            else if (action.equals("updateEnrollment")) {
-                ;
-            }
         } catch (Exception ex) {
             ex.printStackTrace();
             return;
