@@ -4,6 +4,8 @@ import com.cst438.domain.User;
 import com.cst438.domain.UserRepository;
 import com.cst438.dto.UserDTO;
 import com.cst438.service.GradebookServiceProxy;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,17 @@ public class UserController {
 
     @Autowired
     GradebookServiceProxy gradebookServiceProxy;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // Method to convert DTO to JSON string
+    private String asJsonString(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -61,7 +74,7 @@ public class UserController {
             throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "invalid user type");
         }
         userRepository.save(user);
-        gradebookServiceProxy.sendMessage("User created: " + user.getId());
+        gradebookServiceProxy.sendMessage("addUser " + asJsonString(user));
         return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getType());
     }
 
@@ -81,7 +94,7 @@ public class UserController {
             throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "invalid user type");
         }
         userRepository.save(user);
-        gradebookServiceProxy.sendMessage("User updated: " + user.getId());
+        gradebookServiceProxy.sendMessage("updateUser " + asJsonString(user));
         return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getType());
     }
 
@@ -90,7 +103,7 @@ public class UserController {
         User user = userRepository.findById(id).orElse(null);
         if (user!=null) {
             userRepository.delete(user);
-            gradebookServiceProxy.sendMessage("User deleted: " + id);
+            gradebookServiceProxy.sendMessage("deleteUser " + id);
         }
 
     }
