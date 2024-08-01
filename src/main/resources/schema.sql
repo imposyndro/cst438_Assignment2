@@ -53,3 +53,4 @@ create table enrollment (
     foreign key(section_no) references section(section_no),
     foreign key(user_id) references user_table(id)
 );
+
