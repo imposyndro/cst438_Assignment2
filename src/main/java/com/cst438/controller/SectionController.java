@@ -76,7 +76,7 @@ public class SectionController {
         }
 
         sectionRepository.save(s);
-        gradebookServiceProxy.sendMessage("addSection " + asJsonString(section));
+        gradebookServiceProxy.sendMessage("addSection " + asJsonString(s));
         return new SectionDTO(
                 s.getSectionNo(),
                 s.getTerm().getYear(),
