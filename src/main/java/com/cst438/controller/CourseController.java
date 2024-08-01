@@ -3,6 +3,8 @@ package com.cst438.controller;
 import com.cst438.domain.*;
 import com.cst438.dto.CourseDTO;
 import com.cst438.dto.SectionDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +40,17 @@ public class CourseController {
     @Autowired
     GradebookServiceProxy gradebookServiceProxy;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // Method to convert DTO to JSON string
+    private String asJsonString(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // ADMIN function to create a new course
     @PostMapping("/courses")
     public CourseDTO addCourse(@RequestBody CourseDTO course) {
@@ -46,7 +59,7 @@ public class CourseController {
         c.setTitle(course.title());
         c.setCourseId(course.courseId());
         courseRepository.save(c);
-        gradebookServiceProxy.sendMessage("Course created: " + course.courseId());
+        gradebookServiceProxy.sendMessage("addCourse " + course);
         return new CourseDTO(
                 c.getCourseId(),
                 c.getTitle(),
@@ -64,7 +77,7 @@ public class CourseController {
             c.setTitle(course.title());
             c.setCredits(course.credits());
             courseRepository.save(c);
-            gradebookServiceProxy.sendMessage("Course updated: " + course.courseId());
+            gradebookServiceProxy.sendMessage("updateCourse " + asJsonString(course));
             return new CourseDTO(
                     c.getCourseId(),
                     c.getTitle(),
@@ -81,7 +94,7 @@ public class CourseController {
         // if course does not exist, do nothing.
         if (c!=null) {
             courseRepository.delete(c);
-            gradebookServiceProxy.sendMessage("Course deleted: " + courseid);
+            gradebookServiceProxy.sendMessage("deleteCourse " + courseid);
         }
     }
 
