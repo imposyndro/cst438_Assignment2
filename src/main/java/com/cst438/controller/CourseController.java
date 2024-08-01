@@ -59,7 +59,7 @@ public class CourseController {
         c.setTitle(course.title());
         c.setCourseId(course.courseId());
         courseRepository.save(c);
-        gradebookServiceProxy.sendMessage("addCourse " + course);
+        gradebookServiceProxy.sendMessage("addCourse " + asJsonString(course));
         return new CourseDTO(
                 c.getCourseId(),
                 c.getTitle(),
