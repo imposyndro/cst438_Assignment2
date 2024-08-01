@@ -3,6 +3,8 @@ package com.cst438.controller;
 import com.cst438.domain.*;
 import com.cst438.dto.SectionDTO;
 import com.cst438.service.GradebookServiceProxy;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,17 @@ public class SectionController {
 
     @Autowired
     GradebookServiceProxy gradebookServiceProxy;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // Method to convert DTO to JSON string
+    private String asJsonString(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // ADMIN function to create a new section
     @PostMapping("/sections")
@@ -63,7 +76,7 @@ public class SectionController {
         }
 
         sectionRepository.save(s);
-        gradebookServiceProxy.sendMessage("Section created: " + section.secId());
+        gradebookServiceProxy.sendMessage("addSection " + asJsonString(section));
         return new SectionDTO(
                 s.getSectionNo(),
                 s.getTerm().getYear(),
@@ -103,7 +116,7 @@ public class SectionController {
             s.setInstructor_email(section.instructorEmail());
         }
         sectionRepository.save(s);
-        gradebookServiceProxy.sendMessage("Section updated: " + section.secId());
+        gradebookServiceProxy.sendMessage("updateSection " + asJsonString(section));
     }
 
     // ADMIN function to create a delete section
@@ -113,7 +126,7 @@ public class SectionController {
         Section s = sectionRepository.findById(sectionno).orElse(null);
         if (s != null) {
             sectionRepository.delete(s);
-            gradebookServiceProxy.sendMessage("Section deleted: " + sectionno);
+            gradebookServiceProxy.sendMessage("deleteSection " + asJsonString(sectionno));
         }
     }
 
