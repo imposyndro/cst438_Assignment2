@@ -1,5 +1,6 @@
 package com.cst438.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,6 +12,7 @@ public class Enrollment {
 
     @ManyToOne
     @JoinColumn(name="section_no", nullable=false)
+    @JsonManagedReference
     private Section section;
     @ManyToOne
     @JoinColumn(name="user_id", nullable=false)
