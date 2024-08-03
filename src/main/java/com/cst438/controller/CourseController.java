@@ -1,26 +1,19 @@
 package com.cst438.controller;
 
 import com.cst438.domain.*;
-import com.cst438.dto.*;
+import com.cst438.dto.CourseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.ArrayList;
 import java.util.List;
 
-
-/*
- * Controller for managing courses and sections.
- *   List courses, add course, update, delete course.
- *   List sections for a course, add, update and delete section.
- */
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api")
 public class CourseController {
 
     @Autowired
@@ -35,12 +28,10 @@ public class CourseController {
     @Autowired
     UserRepository userRepository;
 
-
     // ADMIN function to create a new course
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @PostMapping("/courses")
     public CourseDTO addCourse(@RequestBody CourseDTO course) {
-
         Course c = new Course();
         c.setCredits(course.credits());
         c.setTitle(course.title());
@@ -54,13 +45,12 @@ public class CourseController {
     }
 
     // ADMIN function to update a course
-    @PutMapping("/courses")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @PutMapping("/courses")
     public CourseDTO updateCourse(@RequestBody CourseDTO course) {
-
         Course c = courseRepository.findById(course.courseId()).orElse(null);
-        if (c==null) {
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "course not found "+course.courseId());
+        if (c == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found " + course.courseId());
         } else {
             c.setTitle(course.title());
             c.setCredits(course.credits());
@@ -75,18 +65,19 @@ public class CourseController {
 
     // ADMIN function to delete a course
     // delete will fail if the course has sections
-    @DeleteMapping("/courses/{courseid}")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @DeleteMapping("/courses/{courseid}")
     public void deleteCourse(@PathVariable String courseid) {
         Course c = courseRepository.findById(courseid).orElse(null);
         // if course does not exist, do nothing.
-        if (c!=null) {
+        if (c != null) {
             courseRepository.delete(c);
         }
     }
 
+    // Any logged-in user can view the list of courses
     @GetMapping("/courses")
-    public List<CourseDTO> getAllCourses( ) {
+    public List<CourseDTO> getAllCourses() {
         List<Course> courses = courseRepository.findAllByOrderByCourseIdAsc();
         List<CourseDTO> dto_list = new ArrayList<>();
         for (Course c : courses) {
@@ -95,10 +86,9 @@ public class CourseController {
         return dto_list;
     }
 
+    // Any logged-in user can view the list of terms
     @GetMapping("/terms")
     public List<Term> getAllTerms() {
         return termRepository.findAllByOrderByTermIdDesc();
     }
-
-
 }
