@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/api/enrollments")
 public class EnrollmentController {
 
     @Autowired
