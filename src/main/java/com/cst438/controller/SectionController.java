@@ -83,7 +83,7 @@ public class SectionController {
     // ADMIN function to update a section
     @PutMapping("/sections")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    public void updateSection(@RequestBody SectionDTO section, Principal principal) {
+    public void updateSection(@RequestBody SectionDTO section) {
 
         // can only change instructor email, sec_id, building, room, times, start, end dates
         Section s = sectionRepository.findById(section.secNo()).orElse(null);
@@ -112,9 +112,7 @@ public class SectionController {
     // delete will fail there are related assignments or enrollments
     @DeleteMapping("/sections/{sectionno}")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
-    public void deleteSection(@PathVariable int sectionno, Principal principal) {
-
-
+    public void deleteSection(@PathVariable int sectionno) {
         Section s = sectionRepository.findById(sectionno).orElse(null);
         if (s != null) {
             sectionRepository.delete(s);
