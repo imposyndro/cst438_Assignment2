@@ -81,7 +81,7 @@ public class EnrollmentController {
 
     // Instructor uploads enrollments with the final grades for the section
     // User must be instructor for the section
-    @PutMapping
+    @PutMapping("/enrollments")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_INSTRUCTOR')")
     public void updateEnrollmentGrade(
             @RequestBody List<EnrollmentDTO> dlist,
