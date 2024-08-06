@@ -244,7 +244,8 @@ public class AssignmentController {
         List<AssignmentStudentDTO> assignmentStudentDTOS = new ArrayList<>();
 
         for (Assignment assignment : assignments) {
-            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(assignment.getAssignmentId(), studentId);
+            Enrollment enrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(assignment.getSection().getSectionNo(), studentId);
+            Grade grade = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollment.getEnrollmentId(), assignment.getAssignmentId());
             assignmentStudentDTOS.add(new AssignmentStudentDTO(
                     assignment.getAssignmentId(),
                     assignment.getTitle(),
